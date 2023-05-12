@@ -60,18 +60,17 @@ def get(dataset, **kwargs):
 
 
     #Unicode String
-    if type(dataset) == strings or type(dataset) == str:
+    if type(dataset) in [strings, str]:
 
         if '.' in dataset:
             dataset_temp = dataset.split('.')
             dataset = dataset_temp[0]
             dataset_columns = dataset_temp[1]
-            kwargs.update({'column':dataset_columns})
+            kwargs['column'] = dataset_columns
 
 
-        url = QUANDL_API_URL + 'datasets/{}.csv?'.format(dataset)
+        url = QUANDL_API_URL + f'datasets/{dataset}.csv?'
 
-    #Array
     elif type(dataset) == list:
         multiple_dataset_dataframe = pd.DataFrame()
         for i in dataset:
@@ -86,7 +85,6 @@ def get(dataset, **kwargs):
             multiple_dataset_dataframe = pd.merge(multiple_dataset_dataframe,d,right_index = True,left_index = True,how='outer')
         return multiple_dataset_dataframe
 
-    #If wrong format
     else:
         error = "Your dataset must either be specified as a string (containing a Quandl code) or an array (of Quandl codes)"
         raise WrongFormat(error)
@@ -117,29 +115,23 @@ def get(dataset, **kwargs):
         if verbose and verbose != 'no':
             print("Returning Dataframe for ", dataset)
 
-    #Error catching
     except HTTPError as e:
         #API limit reached
         if str(e) == 'HTTP Error 403: Forbidden':
             error = 'API daily call limit exceeded. Contact us at connect@quandl.com if you want an increased daily limit'
             raise CallLimitExceeded(error)
 
-        #Dataset not found
         elif str(e) == 'HTTP Error 404: Not Found':
-            error = "Dataset not found. Check Quandl code: {} for errors".format(dataset)
+            error = f"Dataset not found. Check Quandl code: {dataset} for errors"
             raise DatasetNotFound(error)
 
-        #Catch all
         else:
             if verbose and verbose != 'no':
                 print("url:", url)
-            error = "Error Downloading! {}".format(e)
+            error = f"Error Downloading! {e}"
             raise ErrorDownloading(error)
 
-    if returns == 'numpy':
-        return urldata.to_records()
-
-    return urldata
+    return urldata.to_records() if returns == 'numpy' else urldata
 
 def push(data, code, name, authtoken='', desc='', override=False, verbose=False, text=None):
     ''' Upload a pandas Dataframe to Quandl and returns link to the dataset.
@@ -192,7 +184,7 @@ def push(data, code, name, authtoken='', desc='', override=False, verbose=False,
                 raise DateNotRecognized(error)
         for n in i:
             if isinstance(n, (float, int)):
-                datestr += ',' + str(n)
+                datestr += f',{str(n)}'
         datestr += '\n'
 
     params = {'name': name,
@@ -210,10 +202,12 @@ def push(data, code, name, authtoken='', desc='', override=False, verbose=False,
                  "recall the function with overide = True")
         raise ValueError(error)
 
-    rtn = ('http://www.quandl.com/' + jsonreturn['source_code'] + '/' +
-           jsonreturn['code'])
-    #Return URL of uploaded dataset
-    return rtn
+    return (
+        'http://www.quandl.com/'
+        + jsonreturn['source_code']
+        + '/'
+        + jsonreturn['code']
+    )
 
 
 def search(query, source=None, page=1, authtoken=None, verbose=True, prints=None):
@@ -241,7 +235,7 @@ def search(query, source=None, page=1, authtoken=None, verbose=True, prints=None
     if source:
         url += '&source_code=' + source
     #Page to be searched
-    url += '&page=' + str(page)
+    url += f'&page={str(page)}'
     text= urlopen(url).read().decode("utf-8")
     data = json.loads(text)
     try:
@@ -250,12 +244,13 @@ def search(query, source=None, page=1, authtoken=None, verbose=True, prints=None
         raise TypeError("There are no matches for this search")
     datalist = []
     for i in range(len(datasets)):
-        temp_dict ={}
-        temp_dict['name'] = datasets[i]['name']
-        temp_dict['code'] = datasets[i]['source_code'] + '/' + datasets[i]['code']
-        temp_dict['desc'] = datasets[i]['description']
-        temp_dict['freq'] = datasets[i]['frequency']
-        temp_dict['colname'] = datasets[i]['column_names']
+        temp_dict = {
+            'name': datasets[i]['name'],
+            'code': datasets[i]['source_code'] + '/' + datasets[i]['code'],
+            'desc': datasets[i]['description'],
+            'freq': datasets[i]['frequency'],
+            'colname': datasets[i]['column_names'],
+        }
         datalist.append(temp_dict)
         if verbose and i < 4:
             print('{0:20}       :        {1:50}'.format('Name',temp_dict['name']))
@@ -278,14 +273,13 @@ def _parse_dates(date):
     try:
         date = parser.parse(date)
     except ValueError:
-        raise ValueError("{} is not recognised a date.".format(date))
+        raise ValueError(f"{date} is not recognised a date.")
     return date.date().isoformat()
 
 
 # Download data into pandas dataframe
 def _download(url):
-    dframe = pd.read_csv(url, index_col=0, parse_dates=True)
-    return dframe
+    return pd.read_csv(url, index_col=0, parse_dates=True)
 
 #Push data to Quandl. Returns json of HTTP push.
 def _htmlpush(url, raw_params):
@@ -313,26 +307,19 @@ def _getauthtoken(token,text):
     if token:
         try:
             pickle.dump(token, open('authtoken.p', 'wb'))
-            if text == "no" or text == False:
-                pass
-
-            else:
-                print("Token {} activated and saved for later use.".format(token))
+            if text not in ["no", False]:
+                print(f"Token {token} activated and saved for later use.")
         except Exception as e:
-            print("Error writing token to cache: {}".format(str(e)))
+            print(f"Error writing token to cache: {str(e)}")
 
-    elif not savedtoken and not token:
-            if text == "no" or text == False:
-                pass
-            else:
-                print("No authentication tokens found: usage will be limited.")
-                print("See www.quandl.com/api for more information.")
-    elif savedtoken and not token:
+    elif not savedtoken:
+        if text not in ["no", False]:
+            print("No authentication tokens found: usage will be limited.")
+            print("See www.quandl.com/api for more information.")
+    else:
         token = savedtoken
-        if text == "no" or text == False:
-             pass
-        else:
-            print("Using cached token {} for authentication.".format(token))
+        if text not in ["no", False]:
+            print(f"Using cached token {token} for authentication.")
     return token
 
 

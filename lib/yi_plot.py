@@ -184,8 +184,8 @@ def scatter( dataframe, title='tmp', col=[0, 1] ):
     #             cmap=colormap.viridis  [perceptual uniform]
     #         but we leave cmap arg out since viridis will be the 
     #         default soon: http://matplotlib.org/users/colormaps.html
-    colstr = '_' + str(col[0]) + '-' + str(col[1]) 
-    ax.set_title(title + colstr + ' / last ' + str(dataframe.index[-1]))  
+    colstr = f'_{str(col[0])}-{str(col[1])}'
+    ax.set_title(title + colstr + ' / last ' + str(dataframe.index[-1]))
     #                                          ^index on last data point
     plt.grid(True)
     plt.show()
@@ -213,9 +213,9 @@ def scats( dataframe, title='tmp' ):
     #  e.g. ncol==5  implies npairs==10
     #       ncol==10 implies npairs==45
     #       ncol==20 implies npairs==190
-    print(" ::  Number of pair-wise plots: " + str(npairs))
+    print(f" ::  Number of pair-wise plots: {str(npairs)}")
     for pair in pairs:
-        print(" ::  Show column pair: " + str(pair))
+        print(f" ::  Show column pair: {str(pair)}")
         scatter( dataframe, title, pair )
         print("----------------------")
     return

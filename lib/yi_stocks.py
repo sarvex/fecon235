@@ -84,40 +84,39 @@ def stock_decode( slang ):
         #  So if given argument is in all CAPS, 
         #  or does not begin with 's4'
         raise ValueError('Stock slang argument is invalid.')
-    else:
-        try:
-            symbol = slang[2:].upper()
-        except:
-            raise ValueError('Stock slang argument is invalid.')
+    try:
+        symbol = slang[2:].upper()
+    except:
+        raise ValueError('Stock slang argument is invalid.')
     return symbol
 
 
 def stock_all( slang, maxi=3650 ):
-     '''slang string retrieves ALL columns for single stock.
+    '''slang string retrieves ALL columns for single stock.
 
      The slang string consists of 's4' + symbol, all in lower case, 
      e.g. 's4spy' for SPY.
 
      maxi is set to default of ten years past data.
      '''
-     #       Typical:  start = datetime.datetime(2013, 1, 20)
-     #       but we just want the most current window of data.
-     now   = datetime.datetime.now()
-     end   = now + datetime.timedelta( days=1 )
-     #           ^add just to be safe about timezones.
-     start = end - datetime.timedelta( days=maxi )
-     #             Date offsets are chronological days, 
-     #             NOT trading days.
-     symbol = stock_decode( slang )
+    #       Typical:  start = datetime.datetime(2013, 1, 20)
+    #       but we just want the most current window of data.
+    now   = datetime.datetime.now()
+    end   = now + datetime.timedelta( days=1 )
+    #           ^add just to be safe about timezones.
+    start = end - datetime.timedelta( days=maxi )
+    #             Date offsets are chronological days, 
+    #             NOT trading days.
+    symbol = stock_decode( slang )
      #
      #        MAIN: use Yahoo Finance before Google Finance:
-     try:
-          df = pddata.DataReader( symbol, 'yahoo',  start, end )
-          print(" ::  Retrieved from Yahoo Finance: " + symbol )
-     except:
-          df = pddata.DataReader( symbol, 'google', start, end )
-          print(" ::  Retrieved from Google Finance: " + symbol)
-     return df
+    try:
+        df = pddata.DataReader( symbol, 'yahoo',  start, end )
+        print(f" ::  Retrieved from Yahoo Finance: {symbol}")
+    except:
+        df = pddata.DataReader( symbol, 'google', start, end )
+        print(f" ::  Retrieved from Google Finance: {symbol}")
+    return df
 
 
 def stock_one( slang, maxi=3650, col='Close' ):
@@ -130,23 +129,18 @@ def stock_one( slang, maxi=3650, col='Close' ):
 
 
 def getstock( slang, maxi=3650 ):
-     '''Retrieve stock data from Yahoo Finance or Google Finance.
+    '''Retrieve stock data from Yahoo Finance or Google Finance.
      maxi is the number of chronological, not trading, days.
      We can SYNTHESIZE a s4 slang by use of string equivalent arg.
      '''
-     if   False:
-          pass
-     elif False:
-          pass
-     else:
-          df = stock_one( slang, maxi, 'Close' )
-     #
-     #         _Give default fecon235 names to column and index:
-     df = tools.names( df )
-     #         Finally NO NULLS, esp. for synthetics derived from 
-     #         overlapping indexes (note that readfile does 
-     #         fillna with pad beforehand):
-     return df.dropna()
+    df = stock_one( slang, maxi, 'Close' )
+    #
+    #         _Give default fecon235 names to column and index:
+    df = tools.names( df )
+    #         Finally NO NULLS, esp. for synthetics derived from 
+    #         overlapping indexes (note that readfile does 
+    #         fillna with pad beforehand):
+    return df.dropna()
 
 
 if __name__ == "__main__":

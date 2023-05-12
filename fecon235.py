@@ -112,16 +112,10 @@ def get( code, maxi=0 ):
         df = getfred( code )
     except:
         try:
-            if maxi:
-                df = getqdl( code, maxi )
-            else:
-                df = getqdl( code )
+            df = getqdl( code, maxi ) if maxi else getqdl( code )
         except:
             try:
-                if maxi:
-                    df = getstock( code, maxi )
-                else:
-                    df = getstock( code )
+                df = getstock( code, maxi ) if maxi else getstock( code )
             except: 
                 raise ValueError('INVALID symbol string or code for fecon get()')
     return df
@@ -203,7 +197,7 @@ def holtfred( data, h=24, alpha=hw_alpha, beta=hw_beta ):
 def groupget( ggdic=group4d, maxi=0 ):
     '''Retrieve and create group dataframe, given group dictionary.'''
     #  Since dictionaries are unordered, create SORTED list of keys:
-    keys = [ key for key in sorted(ggdic) ]
+    keys = list(sorted(ggdic))
     #  Download individual dataframes as values into a dictionary:
     dfdic = { key : get(ggdic[key], maxi)  for key in keys }
     #             ^Illustrates dictionary comprehension.
@@ -308,7 +302,7 @@ def groupholtf( groupdf, h=12, alpha=ts.hw_alpha, beta=ts.hw_beta ):
     return keysdf
 
 
-def groupcotr( group=cotr4w, alpha=0 ): 
+def groupcotr( group=cotr4w, alpha=0 ):
     '''Compute latest normalized CFTC COTR position indicators.
        Optionally specify alpha for Exponential Moving Average
        which is a smoothing parameter: 0 < alpha < 1 (try 0.26)
@@ -318,10 +312,7 @@ def groupcotr( group=cotr4w, alpha=0 ):
     positions = groupget( group )
     norpositions = groupfun( normalize, positions )
     #  alpha default should skip SMOOTHING operation...
-    if alpha:
-        return groupfun( ema, norpositions, alpha )
-    else:
-        return norpositions
+    return groupfun( ema, norpositions, alpha ) if alpha else norpositions
 
 
 def forefunds( nearby='16m', distant='17m' ):

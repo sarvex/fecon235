@@ -79,7 +79,7 @@ def warn( message, stub="WARNING:", prefix=" !. "):
 
 def die( message, errcode=1, prefix=" !! "):
     '''Gracefully KILL script, optionally specifying error code.'''
-    stub = "FATAL " + str(errcode) + ":"
+    stub = f"FATAL {str(errcode)}:"
     warn( message, stub, prefix )
     sys.exit( errcode )
     #         ^interpretation is system dependent;
@@ -94,10 +94,7 @@ def date( hour=True, utc=True, localstr=' Local' ):
        Setting utc to False will give local time instead of UTC,
        then localstr can be used to indicate location.
     '''
-    if hour:
-        form = "%Y-%m-%d, %H:%M:%S"
-    else:
-        form = "%Y-%m-%d"
+    form = "%Y-%m-%d, %H:%M:%S" if hour else "%Y-%m-%d"
     if utc:
         form += ' UTC'
         tup = time.gmtime()
@@ -124,13 +121,13 @@ def pythontup():
 def versionstr( module="IPython" ):
     '''Represent version as a string, or None if not installed.'''
     #  Unfortunately must treat Python vs its modules differently...
-    if module=="Python" or module=="python":
+    if module in ["Python", "python"]:
         ver = pythontup()
-        return str(ver[0]) + '.' + str(ver[1]) + '.' + str(ver[2])   
+        return f'{str(ver[0])}.{str(ver[1])}.{str(ver[2])}'
     else: 
         try:
-            exec( "import " + module )
-            exec( "vermod = " + module + ".__version__" )
+            exec(f"import {module}")
+            exec(f"vermod = {module}.__version__")
             return vermod
         except:
             return None
@@ -144,10 +141,7 @@ def versiontup( module="IPython" ):
         return tuple(v)
     except:
         #  e.g. if not installed or not convertible to integers...
-        if s == None:
-            return ( 0,  0,  0)
-        else:
-            return (-9, -9, -9)
+        return (0, 0, 0) if s is None else (-9, -9, -9)
 
 
 def version( module="IPython" ):

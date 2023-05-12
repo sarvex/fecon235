@@ -50,10 +50,7 @@ def maybe( p=0.50 ):
     '''Uniformly random indicator function such that prob(I=1=True) = p.'''
     #  Nice to have for random "if" conditional branching.
     #  Fun note: Python's boolean True is actually mapped to int 1.
-    if randou() <= p:
-        return 1
-    else:
-        return 0
+    return 1 if randou() <= p else 0
 
 
 def randog( sigma=1.0 ):
@@ -66,10 +63,7 @@ def randog( sigma=1.0 ):
 
 def simug( sigma, N=256 ):
     '''Simulate array of shape (N,) from Gaussian Normal(0.0, sigma^2).'''
-    #  Argument sigma is the standard deviation, NOT the variance!
-    arr = sigma * np.random.randn( N )
-    #  For non-zero mean, simply add it later: mu + simug(sigma)
-    return arr
+    return sigma * np.random.randn( N )
 
 
 def simug_mix( sigma1, sigma2, q=0.10, N=256 ):
@@ -92,16 +86,16 @@ def simug_mix( sigma1, sigma2, q=0.10, N=256 ):
 
 
 def GET_simu_spx_pcent():
-     '''Retrieve normalized SPX daily percent change 1957-2014.'''
-     #           NORMALIZED s.t. sample mean=0 and std=1%.
-     datafile = 'SIMU-mn0-sd1pc-d4spx_1957-2014.csv.gz'
-     try:
-          df = readfile( datafile, compress='gzip' )
-          #  print(' ::  Import success: ' + datafile)
-     except:
-          df = 0
-          print(' !!  Failed to find: ' + datafile)
-     return df
+    '''Retrieve normalized SPX daily percent change 1957-2014.'''
+    #           NORMALIZED s.t. sample mean=0 and std=1%.
+    datafile = 'SIMU-mn0-sd1pc-d4spx_1957-2014.csv.gz'
+    try:
+        df = readfile( datafile, compress='gzip' )
+        #  print(' ::  Import success: ' + datafile)
+    except:
+        df = 0
+        print(f' !!  Failed to find: {datafile}')
+    return df
 
 
 def SHAPE_simu_spx_pcent( mean=MEAN_PC_SPX, std=STD_PC_SPX ):
@@ -154,18 +148,18 @@ def simu_prices( N, yarray ):
 
 
 def simu_plots_spx( charts=1, N=N_PC_SPX, mean=MEAN_PC_SPX, std=STD_PC_SPX ):
-     '''Display simulated SPX price charts of N days, given mean and std.'''
-     yarray = array_spx_returns( mean, std )
+    '''Display simulated SPX price charts of N days, given mean and std.'''
+    yarray = array_spx_returns( mean, std )
      #        Read in the data only once BEFORE the loop...
-     for i in range( charts ):
-          px = simu_prices( N, yarray ) 
-          plotn( px )
+    for _ in range( charts ):
+        px = simu_prices( N, yarray )
+        plotn( px )
           #  Plot, then for the given prices, compute annualized:
           #           geometric mean, arithmetic mean, volatility.
-          print('     georet: ' + str( georet(px) ))
-          print('   ____________________________________')
-          print('')
-     return
+        print(f'     georet: {str(georet(px))}')
+        print('   ____________________________________')
+        print('')
+    return
 
      
 if __name__ == "__main__":

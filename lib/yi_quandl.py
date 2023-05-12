@@ -401,7 +401,7 @@ fut_dict = {
 
 
 def fut_decode( slang ):
-    '''Validate and translate slang string into vendor futures code.
+     '''Validate and translate slang string into vendor futures code.
 
     Quandl uses format: {EXCHANGE}/{CODE}{MONTH}{YEAR}
          {EXCHANGE} is the acronym for the futures exchange
@@ -415,23 +415,19 @@ def fut_decode( slang ):
     >>> print(fut_decode( 'f4xau15z' ))
     CME/GCZ2015
     '''
-    if slang.isupper():
-        #  So if given argument is in all CAPS...
-        raise ValueError('Futures slang argument is invalid.')
-        #  The official code should yield all dataframe columns, 
-        #  whereas slang is intended for selecting just one column.
-        #  Thus NOT:  symbol = slang
-    else:
-        try:
-            #  Parse slang, lookup in dict, translate into symbol:
-            asset = slang[:-3].lower()
-            #                 ^if f4* variables are possibly involved.
-            year  = '20' + slang[-3:-1]
-            month = slang[-1].upper()
-            symbol = fut_dict[ asset ] + month + year
-        except:
-            raise ValueError('Futures slang argument is invalid.')
-    return symbol
+     if slang.isupper():
+          #  So if given argument is in all CAPS...
+          raise ValueError('Futures slang argument is invalid.')
+     try:
+         #  Parse slang, lookup in dict, translate into symbol:
+         asset = slang[:-3].lower()
+         #                 ^if f4* variables are possibly involved.
+         year  = '20' + slang[-3:-1]
+         month = slang[-1].upper()
+         symbol = fut_dict[ asset ] + month + year
+     except:
+         raise ValueError('Futures slang argument is invalid.')
+     return symbol
 
 
 def getfut( slang, maxi=512, col='Settle' ):
